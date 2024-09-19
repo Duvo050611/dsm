@@ -81,5 +81,8 @@ class ClienteController extends Controller
     pulic function function1(){
 
     }
+pulic function function2(){
+
+}
 
 }
