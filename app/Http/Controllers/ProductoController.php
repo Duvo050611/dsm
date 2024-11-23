@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Models\Producto;
@@ -7,66 +6,50 @@ use Illuminate\Http\Request;
 
 class ProductoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $productos = Producto::all();
-        return view('producto.index', compact('productos'));
+        $productos = Producto::paginate(2);
+        return view('productos.index', compact('productos'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
-    {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'required|string|max:255',
-            'precio' => 'required|numeric',
-            'stock' => 'required|integer',
+{
+    $request->validate([
+        'nombre' => 'required|string|max:255',
+        'descripcion' => 'required|string|max:255',
+        'precio' => 'required|numeric|min:0',
+        'stock' => 'required|integer|min:0' 
+    ]);
+
+    Producto::create($request->all());
+    return redirect()->route('productos.index')->with('success', 'Producto creado satisfactoriamente.');
+}
+
+
+public function update(Request $request, $id)
+{
+    try {
+        $producto = Producto::findOrFail($id);
+        $producto->update($request->all());
+
+        return response()->json([
+            'id' => $producto->id,
+            'nombre' => $producto->nombre,
+            'descripcion' => $producto->descripcion,
+            'precio' => $producto->precio,
+            'stock' => $producto->stock
         ]);
-
-        $producto = new Producto();
-        $producto->nombre = $request->input('nombre');
-        $producto->descripcion = $request->input('descripcion');
-        $producto->precio = $request->input('precio');
-        $producto->stock = $request->input('stock');
-        $producto->save();
-
-        return redirect()->back();
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'Error al actualizar el producto'], 500);
     }
+}
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'descripcion' => 'required|string|max:255',
-            'precio' => 'required|numeric',
-            'stock' => 'required|integer',
-        ]);
+public function destroy($id)
+{
+    $producto = Producto::findOrFail($id);
+    $producto->delete();
 
-        $producto = Producto::find($id);
-        $producto->nombre = $request->input('nombre');
-        $producto->descripcion = $request->input('descripcion');
-        $producto->precio = $request->input('precio');
-        $producto->stock = $request->input('stock');
-        $producto->save();
+    return response()->json(['message' => 'Producto eliminado exitosamente'], 200);
+}
 
-        return redirect()->back();
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        $producto = Producto::find($id);
-        $producto->delete();
-        return redirect()->back();
-    }
 }

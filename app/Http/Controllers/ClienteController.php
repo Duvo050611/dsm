@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ClienteController extends Controller
 {
@@ -11,10 +12,11 @@ class ClienteController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        $clientes = Cliente::all();
-        return view('cliente.index', compact('clientes'));
-    }
+{
+    $clientes = Cliente::paginate(10); 
+    return view('cliente.index', ['clientes' => $clientes]);
+}
+
 
     public function create()
     {
@@ -31,7 +33,7 @@ class ClienteController extends Controller
         $cliente->direccion = $request->input('direccion');
         $cliente->ciudad = $request->input('ciudad');
         $cliente->save();
-
+        session()->flash('success', 'Cliente creado satisfactoriamente.');
         return redirect()->back();
     }
 
@@ -48,7 +50,7 @@ class ClienteController extends Controller
         $cliente->direccion = $request->input('direccion');
         $cliente->ciudad = $request->input('ciudad');
         $cliente->save();
-
+        return redirect()->route('clientes.index')->with('success', 'Cliente editado correctamente.');
         return redirect()->back();
     }
 
@@ -59,6 +61,8 @@ class ClienteController extends Controller
     {
         $cliente = Cliente::find($id);
         $cliente->delete();
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Cliente eliminado correctamente.');
+
     }
+
 }
